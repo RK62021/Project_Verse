@@ -1,0 +1,62 @@
+services:
+  # 🟩 FRONTEND: React + Vite
+  frontend:
+    build: ./Client
+    container_name: vite-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - VITE_API_URL=http://localhost:3000
+    volumes:
+      - ./Client:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+
+  # 🟦 BACKEND: Node.js + Express
+  backend:
+    build: ./Server
+    container_name: node-backend
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./Server/.env
+    volumes:
+      - ./Server:/app
+      - /app/node_modules
+    depends_on:
+      - postgres
+
+  # 🟨 DATABASE: PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres-db
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=mydb
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  # 🟧 DATABASE ADMIN TOOL: pgAdmin
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    restart: always
+    ports:
+      - "8080:80"
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
+    depends_on:
+      - postgres
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+
+volumes:
+  pgdata:
+  pgadmin_data:
