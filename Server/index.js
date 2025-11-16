@@ -1,24 +1,20 @@
-import express from "express";
-import cors from "cors";
-import dotenv from "dotenv";
-
-const app = express();
+import app from './app.js';
+import connectDB from './config/Db.config.js';
+import dotenv from 'dotenv';
 dotenv.config();
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(
-  cors({
-    origin: "*",
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
+const PORT = process.env.PORT || 3000;
 
-app.get("/", (req, res) => {
-  res.send("Hello World");
-});
+const initializeServer = async () => {
+  try {
+    await connectDB();
+    app.listen(PORT, () => {
+      console.log(`Server is running on http://localhost:${PORT}`);
+    });
+  } catch (error) {
+    console.error('Failed to initialize server:', error.message);
+    process.exit(1);
+  }
+};
 
-app.listen(3000, () => {
-  console.log("Server is running on http://localhost:3000");
-});
+initializeServer();

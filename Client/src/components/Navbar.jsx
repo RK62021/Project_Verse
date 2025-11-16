@@ -1,11 +1,19 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 
 export default function Navbar() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { isAuthenticated, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const isActive = (path) => location.pathname === path;
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
 
   return (
     <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm">
@@ -49,22 +57,41 @@ export default function Navbar() {
             >
               About
             </Link>
-            <Link
-              to="/profile"
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                isActive('/profile')
-                  ? 'bg-blue-50 text-blue-600'
-                  : 'text-gray-700 hover:bg-gray-50 hover:text-blue-600'
-              }`}
-            >
-              Profile
-            </Link>
-            <Link
-              to="/signin"
-              className="ml-4 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors duration-200"
-            >
-              Sign In
-            </Link>
+            {isAuthenticated ? (
+              <>
+                <Link
+                  to="/profile"
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    isActive('/profile')
+                      ? 'bg-blue-50 text-blue-600'
+                      : 'text-gray-700 hover:bg-gray-50 hover:text-blue-600'
+                  }`}
+                >
+                  Profile
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="ml-4 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors duration-200"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/signin"
+                  className="ml-4 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors duration-200"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  to="/signup"
+                  className="ml-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors duration-200"
+                >
+                  Sign Up
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -112,22 +139,45 @@ export default function Navbar() {
             >
               About
             </Link>
-            <Link
-              to="/profile"
-              onClick={() => setIsMenuOpen(false)}
-              className={`block px-4 py-2 rounded-lg text-sm font-medium ${
-                isActive('/profile') ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-50'
-              }`}
-            >
-              Profile
-            </Link>
-            <Link
-              to="/signin"
-              onClick={() => setIsMenuOpen(false)}
-              className="block px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium text-center"
-            >
-              Sign In
-            </Link>
+            {isAuthenticated ? (
+              <>
+                <Link
+                  to="/profile"
+                  onClick={() => setIsMenuOpen(false)}
+                  className={`block px-4 py-2 rounded-lg text-sm font-medium ${
+                    isActive('/profile') ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  Profile
+                </Link>
+                <button
+                  onClick={() => {
+                    handleLogout();
+                    setIsMenuOpen(false);
+                  }}
+                  className="block w-full px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium text-center"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/signin"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="block px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium text-center"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  to="/signup"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="block px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium text-center"
+                >
+                  Sign Up
+                </Link>
+              </>
+            )}
           </div>
         )}
       </div>

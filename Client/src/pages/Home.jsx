@@ -70,7 +70,7 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-blue-600 via-purple-600 to-pink-500 text-white overflow-hidden">
+      <section className="relative bg-linear-to-br from-blue-600 via-purple-600 to-pink-500 text-white overflow-hidden">
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="absolute inset-0">
           <div className="absolute top-0 left-0 w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
@@ -81,7 +81,7 @@ export default function Home() {
           <div className="text-center">
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold mb-6 animate-fadeInUp">
               Showcase Your
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 to-pink-200">
+              <span className="block text-transparent bg-clip-text bg-linear-to-r from-yellow-200 to-pink-200">
                 Innovation
               </span>
             </h1>
@@ -113,7 +113,7 @@ export default function Home() {
             {stats.map((stat, index) => (
               <div
                 key={index}
-                className="text-center p-6 rounded-xl bg-gradient-to-br from-blue-50 to-purple-50 hover:shadow-lg transition-all duration-300 transform hover:scale-105"
+                className="text-center p-6 rounded-xl bg-linear-to-br from-blue-50 to-purple-50 hover:shadow-lg transition-all duration-300 transform hover:scale-105"
               >
                 <div className="text-4xl mb-3">{stat.icon}</div>
                 <div className="text-3xl font-bold text-gray-900 mb-2">{stat.value}</div>
@@ -174,7 +174,7 @@ export default function Home() {
                 </div>
                 <p className="text-gray-700 mb-4 italic">&quot;{review.text}&quot;</p>
                 <div className="flex items-center">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold">
+                  <div className="w-10 h-10 rounded-full bg-linear-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold">
                     {review.name.charAt(0)}
                   </div>
                   <div className="ml-3">
@@ -189,7 +189,7 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+      <section className="py-20 bg-linear-to-r from-blue-600 to-purple-600 text-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl font-bold mb-4">Ready to Share Your Project?</h2>
           <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">

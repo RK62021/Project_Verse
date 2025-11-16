@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 export default function SignIn() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -27,12 +29,16 @@ export default function SignIn() {
       //   body: JSON.stringify({ email, password }),
       // });
       // if (!response.ok) throw new Error('Invalid credentials');
+      // const data = await response.json();
       
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
       
-      // Store auth token (when API is ready)
-      // localStorage.setItem('token', data.token);
+      // Simulate getting access token from API
+      const mockAccessToken = 'mock_access_token_' + Date.now();
+      
+      // Store auth token and update auth state
+      login(mockAccessToken);
       
       // Redirect to home
       navigate('/');
