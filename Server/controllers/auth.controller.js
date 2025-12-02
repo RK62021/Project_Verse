@@ -68,6 +68,20 @@ class AuthController {
     res.clearCookie('accessToken');
     res.json(new ApiResponse(200, 'Logout successful'));
   });
+
+  // Verify authentication and return user info
+  verify = asyncHandler(async (req, res, next) => {
+    // This endpoint is protected by authenticateCookie middleware
+    // If we reach here, the user is authenticated
+    const user = req.user;
+    res.json(new ApiResponse(200, 'User authenticated', {
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+      }
+    }));
+  });
 }
 
 export default new AuthController();

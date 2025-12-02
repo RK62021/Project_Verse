@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import ApiError from './utils/ErrorHandeler.js';   // make sure filename matches
 import router from './routes/index.js';
+import cookieParser from 'cookie-parser';
 
 const app = express();
 
@@ -11,11 +12,15 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(
   cors({
-    origin: ['*', "http://localhost:5173"],
+    origin: process.env.NODE_ENV === 'production' 
+      ? process.env.FRONTEND_URL || "http://localhost:5173"
+      : "http://localhost:5173", // Can't use '*' with credentials: true
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true, // Allow cookies to be sent
   })
 );
+app.use(cookieParser());
 // Routes
 app.use('/api', router);
 

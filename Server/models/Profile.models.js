@@ -1,4 +1,4 @@
-import mongoose, { Collection } from 'mongoose';
+import mongoose from 'mongoose';
 
 const Schema = mongoose.Schema;
 
@@ -18,8 +18,17 @@ const ProfileSchema = new Schema({
     linkedin: { type: String, default: '' },
     instagram: { type: String, default: '' },
   },
+  contactEmail: { type: String, default: '' },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
+
+  // likes 
+  likes: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+  likesCount: { type: Number, default: 0 },
+
+  //views 
+  views: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+  viewsCount: { type: Number, default: 0 },
 
 },{timestamps:true});
 

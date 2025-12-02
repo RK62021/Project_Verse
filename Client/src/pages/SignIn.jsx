@@ -22,25 +22,8 @@ export default function SignIn() {
     }
     
     try {
-      // TODO: Replace with actual API call
-      // const response = await fetch('/api/auth/signin', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ email, password }),
-      // });
-      // if (!response.ok) throw new Error('Invalid credentials');
-      // const data = await response.json();
-      
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      
-      // Simulate getting access token from API
-      const mockAccessToken = 'mock_access_token_' + Date.now();
-      
-      // Store auth token and update auth state
-      login(mockAccessToken);
-      
-      // Redirect to home
+      await login(email, password);
+      // Redirect to home on successful login
       navigate('/');
     } catch (err) {
       setError(err.message || 'Invalid email or password. Please try again.');

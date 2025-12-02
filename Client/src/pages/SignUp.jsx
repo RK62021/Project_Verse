@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 
 export default function SignUp() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { register } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -34,25 +34,8 @@ export default function SignUp() {
     }
     
     try {
-      // TODO: Replace with actual API call
-      // const response = await fetch('/api/auth/signup', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ name, email, password }),
-      // });
-      // if (!response.ok) throw new Error('Sign up failed');
-      // const data = await response.json();
-      
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      
-      // Simulate getting access token from API
-      const mockAccessToken = 'mock_access_token_' + Date.now();
-      
-      // Store auth token and update auth state
-      login(mockAccessToken);
-      
-      // Redirect to home
+      await register(name, email, password);
+      // Redirect to home on successful registration
       navigate('/');
     } catch (err) {
       setError(err.message || 'Failed to create account. Please try again.');

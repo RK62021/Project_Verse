@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import Profile from './Profile.models.js';
 
 dotenv.config();
 
@@ -52,6 +53,37 @@ UserSchema.methods.verifyToken = function (token) {
     return null;
   }
 };
+
+// Auto-create profile after new user is saved
+UserSchema.post("save", async function (doc, next) {
+  try {
+    // check if profile already exists
+    const exists = await Profile.findOne({ user: doc._id });
+    if (!exists) {
+      await Profile.create({
+        user: doc._id,
+        bio: "",
+        avatarUrl: "",
+        college: "",
+        socialLinks: {
+          twitter: "",
+          facebook: "",
+          linkedin: "",
+          instagram: "",
+        },
+        contactEmail: "",
+        likes: [],
+        likesCount: 0,
+        views: [],
+        viewsCount: 0,
+      });
+    }
+    next();
+  } catch (err) {
+    console.error("PROFILE CREATION ERROR:", err);
+    next(err);
+  }
+});
 
 const User = mongoose.model('User', UserSchema);
 export default User;
