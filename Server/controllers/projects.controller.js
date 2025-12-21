@@ -3,6 +3,7 @@ import ApiError from '../utils/ErrorHandeler.js';
 import ApiResponse from '../utils/ResponseHandeler.js';
 import asyncHandler from '../utils/asynkHandeler.js';
 import Project from '../models/Project.models.js';
+import { uploadToCloudinary, deleteFromCloudinary } from '../utils/cloudinary.js';
 
 class ProjectsController {
   // Create a new project
@@ -14,20 +15,48 @@ class ProjectsController {
       repositoryUrl,
       liveDemoUrl,
       technologies,
+      category,
       contributors,
     } = req.body;
+    
     if (!title || !description || !repositoryUrl) {
       return next(
         new ApiError(400, 'Title, description, and repository URL are required')
       );
     }
+
+    // Handle project image upload
+    let projectImageUrl = '';
+    if (req.file) {
+      try {
+        projectImageUrl = await uploadToCloudinary(req.file.path, 'projectImg');
+      } catch (error) {
+        return next(new ApiError(500, 'Failed to upload project image'));
+      }
+    }
+
+    // Parse technologies and category if they are strings
+    const parsedTechnologies = typeof technologies === 'string' 
+      ? JSON.parse(technologies) 
+      : technologies || [];
+    
+    const parsedCategory = typeof category === 'string'
+      ? JSON.parse(category)
+      : category || [];
+
+    const parsedContributors = typeof contributors === 'string'
+      ? JSON.parse(contributors)
+      : contributors || [];
+
     const newProject = new Project({
       title,
       description,
       repositoryUrl,
       liveDemoUrl,
-      technologies,
-      contributors,
+      technologies: parsedTechnologies,
+      category: parsedCategory,
+      contributors: parsedContributors,
+      projectImageUrl,
       createdBy: userId,
     });
 
@@ -61,6 +90,7 @@ class ProjectsController {
     }
 
     const projects = await Project.find(filter)
+      .populate('createdBy', 'name email')
       .skip(skip)
       .limit(limits)
       .sort({ createdAt: -1 });
@@ -87,15 +117,15 @@ class ProjectsController {
       return next(new ApiError(400, 'No updates provided'));
     }
 
-    const updatedProject = Project.findByIdAndUpdate(
+    const updatedProject = await Project.findByIdAndUpdate(
       id,
       { $set: updates },
       { new: true, runValidators: true }
-    );
+    ).populate('createdBy', 'name email');
+    
     if (!updatedProject) {
       return next(new ApiError(404, 'Project not found'));
     }
-    await updatedProject.save();
 
     res.json(
       new ApiResponse(200, 'Project updated successfully', updatedProject)
@@ -115,7 +145,9 @@ class ProjectsController {
   // get project by user id
   getProjectsByUserId = asyncHandler(async (req, res, next) => {
     const { userId } = req.params;
-    const projects = await Project.find({ $or: [{ 'contributors.userId': userId }, { createdBy: userId }] }).sort({ createdAt: -1 });
+    const projects = await Project.find({ $or: [{ 'contributors.userId': userId }, { createdBy: userId }] })
+      .populate('createdBy', 'name email')
+      .sort({ createdAt: -1 });
     res.json(
       new ApiResponse(200, 'Projects retrieved successfully', projects)
     );
@@ -125,7 +157,7 @@ class ProjectsController {
   // Get view  project by ID
   getProjectById = asyncHandler(async (req, res, next) => {
     const { id } = req.params;
-    const project = await Project.findById(id);
+    const project = await Project.findById(id).populate('createdBy', 'name email');
     if (!project) {
       return next(new ApiError(404, 'Project not found'));
     }

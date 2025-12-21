@@ -1,16 +1,17 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { projectsAPI } from '../services/api';
 
 export default function UploadProject() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    university: '',
+    category: '',
     tags: '',
-    image: null,
-    githubLink: '',
-    liveLink: '',
+    projectImage: null,
+    repositoryUrl: '',
+    liveDemoUrl: '',
     technologies: '',
   });
   const [error, setError] = useState('');
@@ -18,8 +19,8 @@ export default function UploadProject() {
 
   function handleChange(e) {
     const { name, value, files } = e.target;
-    if (name === 'image') {
-      setFormData((prev) => ({ ...prev, image: files[0] }));
+    if (name === 'projectImage') {
+      setFormData((prev) => ({ ...prev, projectImage: files[0] }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
@@ -31,38 +32,45 @@ export default function UploadProject() {
     setIsSubmitting(true);
 
     // Validation
-    if (!formData.title || !formData.description) {
-      setError('Title and description are required.');
+    if (!formData.title || !formData.description || !formData.repositoryUrl) {
+      setError('Title, description, and repository URL are required.');
       setIsSubmitting(false);
       return;
     }
 
     try {
-      // Create FormData for file upload
-      const submitData = new FormData();
-      Object.keys(formData).forEach((key) => {
-        if (key === 'image' && formData.image) {
-          submitData.append('image', formData.image);
-        } else if (formData[key]) {
-          submitData.append(key, formData[key]);
-        }
-      });
-
-      // TODO: Replace with actual API call
-      // const response = await fetch('/api/projects', {
-      //   method: 'POST',
-      //   body: submitData,
-      // });
-      // if (!response.ok) throw new Error('Failed to upload project');
-
-      console.log('Project data:', formData);
+      // Parse comma-separated values into arrays
+      const technologies = formData.technologies
+        ? formData.technologies.split(',').map(t => t.trim()).filter(Boolean)
+        : [];
       
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const category = formData.category
+        ? formData.category.split(',').map(c => c.trim()).filter(Boolean)
+        : [];
 
-      // Navigate to profile after successful upload
-      navigate('/profile');
+      // Prepare project data
+      const projectData = {
+        title: formData.title,
+        description: formData.description,
+        repositoryUrl: formData.repositoryUrl,
+        liveDemoUrl: formData.liveDemoUrl || '',
+        technologies,
+        category,
+        projectImage: formData.projectImage,
+        contributors: [], // Empty for now
+      };
+
+      // Call API
+      const response = await projectsAPI.createProject(projectData);
+      
+      if (response.status === 'success' || response.statusCode === 201) {
+        // Navigate to profile after successful upload
+        navigate('/profile');
+      } else {
+        throw new Error(response.message || 'Failed to upload project');
+      }
     } catch (err) {
+      console.error('Upload error:', err);
       setError(err.message || 'Failed to upload project. Please try again.');
     } finally {
       setIsSubmitting(false);
@@ -116,19 +124,20 @@ export default function UploadProject() {
               />
             </div>
 
-            {/* University */}
+            {/* GitHub Link */}
             <div>
-              <label htmlFor="university" className="block text-sm font-medium text-gray-700 mb-2">
-                University
+              <label htmlFor="repositoryUrl" className="block text-sm font-medium text-gray-700 mb-2">
+                Repository URL <span className="text-red-500">*</span>
               </label>
               <input
-                type="text"
-                id="university"
-                name="university"
-                value={formData.university}
+                type="url"
+                id="repositoryUrl"
+                name="repositoryUrl"
+                value={formData.repositoryUrl}
                 onChange={handleChange}
+                required
                 className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-200"
-                placeholder="e.g., MIT, Stanford, Harvard"
+                placeholder="https://github.com/username/repo"
               />
             </div>
 
@@ -149,58 +158,42 @@ export default function UploadProject() {
               <p className="mt-1 text-sm text-gray-500">Separate technologies with commas</p>
             </div>
 
-            {/* Tags */}
+            {/* Category */}
             <div>
-              <label htmlFor="tags" className="block text-sm font-medium text-gray-700 mb-2">
-                Tags
+              <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
+                Categories
               </label>
               <input
                 type="text"
-                id="tags"
-                name="tags"
-                value={formData.tags}
+                id="category"
+                name="category"
+                value={formData.category}
                 onChange={handleChange}
                 className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-200"
-                placeholder="e.g., AI, Machine Learning, Education"
+                placeholder="e.g., AI, Web Development, Mobile"
               />
-              <p className="mt-1 text-sm text-gray-500">Separate tags with commas</p>
+              <p className="mt-1 text-sm text-gray-500">Separate categories with commas</p>
             </div>
 
-            {/* Links */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label htmlFor="githubLink" className="block text-sm font-medium text-gray-700 mb-2">
-                  GitHub Link
-                </label>
-                <input
-                  type="url"
-                  id="githubLink"
-                  name="githubLink"
-                  value={formData.githubLink}
-                  onChange={handleChange}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-200"
-                  placeholder="https://github.com/username/repo"
-                />
-              </div>
-              <div>
-                <label htmlFor="liveLink" className="block text-sm font-medium text-gray-700 mb-2">
-                  Live Demo Link
-                </label>
-                <input
-                  type="url"
-                  id="liveLink"
-                  name="liveLink"
-                  value={formData.liveLink}
-                  onChange={handleChange}
-                  className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-200"
-                  placeholder="https://yourproject.com"
-                />
-              </div>
+            {/* Live Demo Link */}
+            <div>
+              <label htmlFor="liveDemoUrl" className="block text-sm font-medium text-gray-700 mb-2">
+                Live Demo URL
+              </label>
+              <input
+                type="url"
+                id="liveDemoUrl"
+                name="liveDemoUrl"
+                value={formData.liveDemoUrl}
+                onChange={handleChange}
+                className="w-full rounded-lg border border-gray-300 px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-200"
+                placeholder="https://yourproject.com"
+              />
             </div>
 
             {/* Image Upload */}
             <div>
-              <label htmlFor="image" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="projectImage" className="block text-sm font-medium text-gray-700 mb-2">
                 Project Image
               </label>
               <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-blue-400 transition-colors duration-200">
@@ -220,13 +213,13 @@ export default function UploadProject() {
                   </svg>
                   <div className="flex text-sm text-gray-600">
                     <label
-                      htmlFor="image"
+                      htmlFor="projectImage"
                       className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
                     >
                       <span>Upload a file</span>
                       <input
-                        id="image"
-                        name="image"
+                        id="projectImage"
+                        name="projectImage"
                         type="file"
                         accept="image/*"
                         onChange={handleChange}
@@ -235,9 +228,9 @@ export default function UploadProject() {
                     </label>
                     <p className="pl-1">or drag and drop</p>
                   </div>
-                  <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
-                  {formData.image && (
-                    <p className="text-sm text-blue-600 mt-2">{formData.image.name}</p>
+                  <p className="text-xs text-gray-500">PNG, JPG, GIF up to 5MB</p>
+                  {formData.projectImage && (
+                    <p className="text-sm text-blue-600 mt-2">{formData.projectImage.name}</p>
                   )}
                 </div>
               </div>

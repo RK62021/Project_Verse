@@ -1,80 +1,48 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ProjectCard from '../components/ProjectCard';
+import { projectsAPI } from '../services/api';
 
 export default function Projects() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTag, setSelectedTag] = useState('All');
+  const [allProjects, setAllProjects] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  // Sample projects - replace with API call
-  const allProjects = [
-    {
-      id: 1,
-      title: 'AI-Powered Learning Assistant',
-      description: 'An intelligent tutoring system that adapts to student learning patterns using machine learning algorithms.',
-      author: 'Sarah Johnson',
-      university: 'MIT',
-      tags: ['AI', 'Machine Learning', 'Education'],
-      likes: 234,
-      views: 1200,
-    },
-    {
-      id: 2,
-      title: 'Sustainable Energy Monitoring System',
-      description: 'IoT-based solution for real-time energy consumption tracking and optimization in smart buildings.',
-      author: 'Michael Chen',
-      university: 'Stanford',
-      tags: ['IoT', 'Sustainability', 'Energy'],
-      likes: 189,
-      views: 980,
-    },
-    {
-      id: 3,
-      title: 'Virtual Reality Campus Tour',
-      description: 'Immersive VR experience allowing prospective students to explore university campuses remotely.',
-      author: 'Emily Rodriguez',
-      university: 'Harvard',
-      tags: ['VR', 'Web Development', 'Education'],
-      likes: 156,
-      views: 750,
-    },
-    {
-      id: 4,
-      title: 'Blockchain Voting System',
-      description: 'Secure and transparent voting platform using blockchain technology for student elections.',
-      author: 'James Wilson',
-      university: 'Oxford',
-      tags: ['Blockchain', 'Security', 'Web3'],
-      likes: 298,
-      views: 1500,
-    },
-    {
-      id: 5,
-      title: 'Smart Health Monitoring App',
-      description: 'Mobile application for tracking health metrics and providing personalized wellness recommendations.',
-      author: 'Lisa Anderson',
-      university: 'Cambridge',
-      tags: ['Mobile', 'Health', 'AI'],
-      likes: 167,
-      views: 890,
-    },
-    {
-      id: 6,
-      title: 'Automated Code Review Tool',
-      description: 'AI-powered tool that automatically reviews code and suggests improvements for better code quality.',
-      author: 'Robert Lee',
-      university: 'Caltech',
-      tags: ['AI', 'Development', 'Tools'],
-      likes: 245,
-      views: 1100,
-    },
-  ];
+  useEffect(() => {
+    fetchProjects();
+  }, []);
 
-  const tags = ['All', 'AI', 'Machine Learning', 'IoT', 'Web Development', 'Mobile', 'Blockchain', 'VR', 'Education'];
+  const fetchProjects = async () => {
+    try {
+      setIsLoading(true);
+      const response = await projectsAPI.getAllProjects();
+      if (response.data && response.data.projects) {
+        setAllProjects(response.data.projects);
+      }
+    } catch (err) {
+      console.error('Error fetching projects:', err);
+      setError('Failed to load projects. Please try again later.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Extract unique tags from all projects
+  const tags = ['All', ...new Set(allProjects.flatMap(p => p.category || []))];
+
+  const handleProjectUpdate = (projectId, updates) => {
+    setAllProjects((prevProjects) =>
+      prevProjects.map((project) =>
+        project._id === projectId ? { ...project, ...updates } : project
+      )
+    );
+  };
 
   const filteredProjects = allProjects.filter((project) => {
     const matchesSearch = project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       project.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesTag = selectedTag === 'All' || project.tags.includes(selectedTag);
+    const matchesTag = selectedTag === 'All' || (project.category && project.category.includes(selectedTag));
     return matchesSearch && matchesTag;
   });
 
@@ -128,31 +96,54 @@ export default function Projects() {
           </div>
         </div>
 
-        {/* Results Count */}
-        <div className="mb-6 text-gray-600">
-          Showing {filteredProjects.length} project{filteredProjects.length !== 1 ? 's' : ''}
-        </div>
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </div>
+        )}
 
-        {/* Projects Grid */}
-        {filteredProjects.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredProjects.map((project) => (
-              <ProjectCard key={project.id} project={project} />
-            ))}
+        {/* Loading State */}
+        {isLoading ? (
+          <div className="flex items-center justify-center py-16">
+            <div className="text-center">
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+              <p className="mt-4 text-gray-600">Loading projects...</p>
+            </div>
           </div>
         ) : (
-          <div className="text-center py-16">
-            <svg
-              className="mx-auto h-12 w-12 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <h3 className="mt-4 text-lg font-medium text-gray-900">No projects found</h3>
-            <p className="mt-2 text-gray-500">Try adjusting your search or filter criteria.</p>
-          </div>
+          <>
+            {/* Results Count */}
+            <div className="mb-6 text-gray-600">
+              Showing {filteredProjects.length} project{filteredProjects.length !== 1 ? 's' : ''}
+            </div>
+
+            {/* Projects Grid */}
+            {filteredProjects.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {filteredProjects.map((project) => (
+                  <ProjectCard 
+                    key={project._id} 
+                    project={project} 
+                    onUpdate={handleProjectUpdate}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-16">
+                <svg
+                  className="mx-auto h-12 w-12 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <h3 className="mt-4 text-lg font-medium text-gray-900">No projects found</h3>
+                <p className="mt-2 text-gray-500">Try adjusting your search or filter criteria.</p>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

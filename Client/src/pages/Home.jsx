@@ -1,9 +1,36 @@
 import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import ProjectCard from '../components/ProjectCard';
+import { useAuth } from '../context/AuthContext';
+import { projectsAPI } from '../services/api';
 
 export default function Home() {
+  const { isAuthenticated } = useAuth();
+  const [topProjects, setTopProjects] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchTopProjects();
+  }, []);
+
+  const fetchTopProjects = async () => {
+    try {
+      setIsLoading(true);
+      const response = await projectsAPI.getAllProjects({ limit: 3 });
+      if (response.data && response.data.projects) {
+        setTopProjects(response.data.projects.slice(0, 3));
+      }
+    } catch (error) {
+      console.error('Error fetching top projects:', error);
+      // Fallback to empty array on error
+      setTopProjects([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Sample data - replace with API calls
-  const topProjects = [
+  const sampleProjects = [
     {
       id: 1,
       title: 'AI-Powered Learning Assistant',
@@ -95,12 +122,21 @@ export default function Home() {
               >
                 Explore Projects
               </Link>
-              <Link
-                to="/signup"
-                className="px-8 py-4 bg-blue-700 text-white rounded-lg font-semibold hover:bg-blue-800 transition-all duration-200 transform hover:scale-105 shadow-lg"
-              >
-                Get Started
-              </Link>
+              {isAuthenticated ? (
+                <Link
+                  to="/upload"
+                  className="px-8 py-4 bg-blue-700 text-white rounded-lg font-semibold hover:bg-blue-800 transition-all duration-200 transform hover:scale-105 shadow-lg"
+                >
+                  Upload a Project
+                </Link>
+              ) : (
+                <Link
+                  to="/signup"
+                  className="px-8 py-4 bg-blue-700 text-white rounded-lg font-semibold hover:bg-blue-800 transition-all duration-200 transform hover:scale-105 shadow-lg"
+                >
+                  Get Started
+                </Link>
+              )}
             </div>
           </div>
         </div>
@@ -133,11 +169,31 @@ export default function Home() {
               Discover innovative projects created by students from top universities around the world
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {topProjects.map((project) => (
-              <ProjectCard key={project.id} project={project} />
-            ))}
-          </div>
+          {isLoading ? (
+            <div className="flex justify-center py-12">
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            </div>
+          ) : topProjects.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {topProjects.map((project) => (
+                <ProjectCard 
+                  key={project._id} 
+                  project={project}
+                  onUpdate={(id, updates) => {
+                    setTopProjects(prev => 
+                      prev.map(p => p._id === id ? { ...p, ...updates } : p)
+                    );
+                  }}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {sampleProjects.map((project) => (
+                <ProjectCard key={project.id} project={project} />
+              ))}
+            </div>
+          )}
           <div className="text-center mt-12">
             <Link
               to="/projects"
@@ -195,12 +251,21 @@ export default function Home() {
           <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
             Join thousands of students showcasing their innovative projects and connecting with peers worldwide.
           </p>
-          <Link
-            to="/signup"
-            className="inline-flex items-center px-8 py-4 bg-white text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition-all duration-200 transform hover:scale-105 shadow-lg"
-          >
-            Get Started Today
-          </Link>
+          {isAuthenticated ? (
+            <Link
+              to="/upload"
+              className="inline-flex items-center px-8 py-4 bg-white text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition-all duration-200 transform hover:scale-105 shadow-lg"
+            >
+              Upload Your Project
+            </Link>
+          ) : (
+            <Link
+              to="/signup"
+              className="inline-flex items-center px-8 py-4 bg-white text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition-all duration-200 transform hover:scale-105 shadow-lg"
+            >
+              Get Started Today
+            </Link>
+          )}
         </div>
       </section>
     </div>

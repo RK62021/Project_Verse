@@ -13,12 +13,16 @@ const ProjectSchema = new Schema(
     technologies: [{ type: String }],
     contributors: [
       {
-        userId: { type: Schema.Types.ObjectId, ref: 'User',required: false },
+        userId: { type: Schema.Types.ObjectId, ref: 'User', required: false },
         role: { type: String },
         name: { type: String },
       },
     ],
     createdBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    likes: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+    likesCount: { type: Number, default: 0 },
+    views: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+    viewsCount: { type: Number, default: 0 },
   },
   { timestamps: true }
 );

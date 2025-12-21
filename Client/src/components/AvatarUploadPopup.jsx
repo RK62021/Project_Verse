@@ -64,25 +64,11 @@ export default function AvatarUploadPopup({ isOpen, onClose, onUpload, currentAv
     }
 
     try {
-      // TODO: Replace with actual API call
-      // const formData = new FormData();
-      // formData.append('avatar', selectedFile);
-      // const response = await fetch('/api/user/avatar', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Authorization': `Bearer ${token}`
-      //   },
-      //   body: formData
-      // });
-      // const data = await response.json();
-
-      // Simulate upload
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Call the onUpload callback with the preview URL
-      onUpload(preview);
+      // Call the onUpload callback with the file
+      await onUpload(selectedFile);
       handleClose();
     } catch (error) {
+      console.error('Upload error:', error);
       alert('Failed to upload avatar. Please try again.');
     }
   };

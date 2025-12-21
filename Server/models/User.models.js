@@ -72,10 +72,7 @@ UserSchema.post("save", async function (doc, next) {
           instagram: "",
         },
         contactEmail: "",
-        likes: [],
-        likesCount: 0,
-        views: [],
-        viewsCount: 0,
+        
       });
     }
     next();

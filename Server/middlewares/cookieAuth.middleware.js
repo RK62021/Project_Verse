@@ -17,7 +17,7 @@ export const authenticateCookie = asyncHandler(async (req, res, next) => {
     console.log('Decoded JWT:', decoded);
     const user = await User.findById(
       decoded.id,
-      '_id username email '
+      '_id name email '
     );
 
     if (!user) {

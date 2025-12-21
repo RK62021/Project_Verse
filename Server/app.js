@@ -4,11 +4,12 @@ import ApiError from './utils/ErrorHandeler.js';   // make sure filename matches
 import router from './routes/index.js';
 import cookieParser from 'cookie-parser';
 
+
 const app = express();
 
 // Middlewares
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' })); // Increased limit for large payloads
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 app.use(
   cors({
